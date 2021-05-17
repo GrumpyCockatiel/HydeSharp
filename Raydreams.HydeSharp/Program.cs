@@ -38,7 +38,7 @@ namespace Raydreams.HydeSharp
             {
                 string template = this.GetTemplate();
                 string[] posts = this.GetFilePaths();
-                this.WritePosts(template, posts);
+                this.TransformPosts(template, posts);
             }
             catch (System.Exception exp)
             {
@@ -52,8 +52,13 @@ namespace Raydreams.HydeSharp
         /// <summary></summary>
         public string BasePath => this._basePath;
 
+        public void TransformPages(string template, string[] posts)
+        {
+
+        }
+
         /// <summary>Transforms all posts to HTML</summary>
-        public void WritePosts(string template, string[] posts)
+        public void TransformPosts(string template, string[] posts)
         {
             MarkdownPipeline pipe = new MarkdownPipelineBuilder().UseSoftlineBreakAsHardlineBreak().Build();
 
