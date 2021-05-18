@@ -17,3 +17,7 @@ Remember Post files have to be in the format `2012-01-18-hello-world.md`
 ## Dependencies
 
 For now my own lib [Raydreams.Common](https://github.com/GrumpyCockatiel/Raydreams.Common) is a dependency as well as [Markdig](https://www.nuget.org/packages/Markdig/). These can be factored out if this really took off.
+
+## License
+
+MIT for now but I'm not married to this.
