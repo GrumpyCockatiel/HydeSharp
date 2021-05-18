@@ -16,7 +16,14 @@ namespace Raydreams.HydeSharp
         /// <summary>Base path of the project</summary>
         private string _basePath;
 
+        /// <summary>The config file should be specified on the CL but we'll set a default</summary>
+        private string _configFile = "_config.yml";
+
+        /// <summary>The Markdown pipeline</summary>
+        private MarkdownPipeline _pipe = null;
+
         /// <summary></summary>
+        /// <param name="args">Path to website source</param>
         static void Main(string[] args)
         {
             Hyde app = new Hyde( $"{IOHelpers.DesktopPath}/website/" );
@@ -29,6 +36,8 @@ namespace Raydreams.HydeSharp
         public Hyde(string basePath)
         {
             this._basePath = basePath;
+
+            this._pipe = new MarkdownPipelineBuilder().UseSoftlineBreakAsHardlineBreak().Build();
         }
 
         /// <summary>Lets do it</summary>
@@ -37,8 +46,8 @@ namespace Raydreams.HydeSharp
             try
             {
                 string template = this.GetTemplate();
-                string[] posts = this.GetFilePaths();
-                this.TransformPosts(template, posts);
+                this.TransformPages( template );
+                this.TransformPosts(template);
             }
             catch (System.Exception exp)
             {
@@ -52,15 +61,37 @@ namespace Raydreams.HydeSharp
         /// <summary></summary>
         public string BasePath => this._basePath;
 
-        public void TransformPages(string template, string[] posts)
-        {
+        /// <summary></summary>
+        public MarkdownPipeline MDPipeline => this._pipe;
 
+        /// <summary></summary>
+        public void TransformPages(string template)
+        {
+            string[] pages = Directory.EnumerateFiles( $"{this.BasePath}/", "*.md", SearchOption.TopDirectoryOnly ).ToArray();
+
+            foreach ( string file in pages )
+            {
+                FileInfo info = new FileInfo( file );
+
+                if ( !info.Exists )
+                    continue;
+
+                // get the markdown
+                string original = File.ReadAllText( file );
+                string html = Markdown.ToHtml( original, this.MDPipeline );
+
+                string post = template.Replace( @"{{ content }}", html );
+
+                string baseName = Path.GetFileNameWithoutExtension( file );
+
+                File.WriteAllText( $"{this.BasePath}/{SiteFolder}/{baseName}.html", post );
+            }
         }
 
         /// <summary>Transforms all posts to HTML</summary>
-        public void TransformPosts(string template, string[] posts)
+        public void TransformPosts(string template)
         {
-            MarkdownPipeline pipe = new MarkdownPipelineBuilder().UseSoftlineBreakAsHardlineBreak().Build();
+            string[] posts = Directory.EnumerateFiles( $"{this.BasePath}/{PostsFolder}", "*.md", SearchOption.TopDirectoryOnly ).ToArray();
 
             foreach (string file in posts)
             {
@@ -69,26 +100,21 @@ namespace Raydreams.HydeSharp
                 if (!info.Exists)
                     continue;
 
+                Post meta = file.TryParseFilename();
+
+                if ( meta == null )
+                    continue;
+
                 // get the markdown
                 string original = File.ReadAllText(file);
-                string html = Markdown.ToHtml(original, pipe);
+                string html = Markdown.ToHtml(original, this.MDPipeline);
 
                 string post = template.Replace( @"{{ content }}", html);
 
-                string baseName = Path.GetFileNameWithoutExtension(file);
+                //string baseName = Path.GetFileNameWithoutExtension(file);
 
-                File.WriteAllText( $"{this.BasePath}/{SiteFolder}/{baseName}.html", post);
+                File.WriteAllText( $"{this.BasePath}/{SiteFolder}/{meta.Name}.html", post);
             }
-        }
-
-        /// <summary>Gets all the posts file paths</summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        public string[] GetFilePaths()
-        {
-            string[] files = Directory.EnumerateFiles( $"{this.BasePath}/{PostsFolder}", "*.md", SearchOption.TopDirectoryOnly).ToArray();
-
-            return files;
         }
 
         /// <summary>Gets a template</summary>
