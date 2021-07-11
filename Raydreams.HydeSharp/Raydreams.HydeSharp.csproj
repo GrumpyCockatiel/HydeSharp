@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Markdig" Version="0.24.0" />
-    <PackageReference Include="raydreams.common" Version="1.0.10" />
+    <PackageReference Include="Markdig" Version="0.25.0" />
+    <PackageReference Include="raydreams.common" Version="1.0.14" />
   </ItemGroup>
 </Project>
